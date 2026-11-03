@@ -2,7 +2,7 @@ name: Build and Deploy Frontend to S3
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, testbranch ]
 
 jobs:
   build:
@@ -16,7 +16,9 @@ jobs:
         with:
           bun-version: 1.0.0
 
-      - name: Install dependencies
+      # السر كله هنا: تحديد مسار العمل جوه فولدر frontend
+      - name: Install dependencies and Build
+        working-directory: ./frontend
         run: |
           bun install
           bun run build
