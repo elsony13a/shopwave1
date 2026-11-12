@@ -1,35 +1,40 @@
-name: Build and Deploy Frontend to S3
-
+name: test project for shopwave
 on:
   push:
-    branches: [ master, testbranch ]
+    branches:
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
+    steps:
+    - name: setup bun
+    uses: oven-sh/bun@v1
+    with:
+      bun-version: '1.0.0'
+    steps:
+    - name: install dependencies
+      working-directory: ./frontend
+      run: |
+        bun install
+        bun run build
+    steps:
+    - name: aws creadientials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    steps:
+    - name: deploy to s3
+      run: |
+        aws s3 sync ./frontend/dist s3://ibrahim-cloud-shop-frontend-2026 --delete
 
-      - name: Set up bun server
-        uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: 1.0.0
-
-      # السر كله هنا: تحديد مسار العمل جوه فولدر frontend
-      - name: Install dependencies and Build
-        working-directory: ./frontend
-        run: |
-          bun install
-          bun run build
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Deploy to S3
-        run: |
-          aws s3 sync frontend/dist s3://elsonyshoptest --delete
+    steps:
+    - name: build backend with docker
+      working-directory: .
+      run: |
+        docker build / --build-arg VITE_API_BASE=52.206.0.88 /-t namespace/shopwavetest1:latest
