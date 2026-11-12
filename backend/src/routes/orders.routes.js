@@ -1,22 +1,18 @@
-
-export async function createOrder(req, res) {
-  console.log("🔥 تم استدعاء راوت إنشاء الأوردر بنجاح! البيانات الواردة:", req.body);
-  try {
-    // باقي الكود الخاص بحفظ الأوردر وSES...
+import express from 'express';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 import { SESClient, SendEmailCommand } from "@aws-sdk/client-ses";
 
-// إعداد clients الخاصة بـ AWS (بتلقط الـ Region أوتوماتيك من البيئة)
+const router = express.Router();
+
 const ddbClient = new DynamoDBClient({ region: "us-east-1" });
 const dynamoDb = DynamoDBDocumentClient.from(ddbClient);
-
 const sesClient = new SESClient({ region: "us-east-1" });
 
-// مثال جوه الـ Route بتاع إنشاء الأوردر
-export async function createOrder(req, res) {
+// دالة إنشاء الأوردر
+async function createOrder(req, res) {
   try {
-    const orderData = req.body; // بيانات الأوردر اللي جاي من الفرونت إند
+    const orderData = req.body;
     const orderId = "ORD-" + Date.now();
 
     const newOrder = {
@@ -24,13 +20,13 @@ export async function createOrder(req, res) {
       createdAt: new Date().toISOString(),
       items: orderData.items,
       totalAmount: orderData.totalAmount,
-      customerDetails: orderData.customerDetails, // اسم، إيميل، عنوان اليوزر
+      customerDetails: orderData.customerDetails,
     };
 
     // 1. حفظ الأوردر في DynamoDB
     await dynamoDb.send(
       new PutCommand({
-        TableName: "OrdersTable", // اسم الجدول بتاعك في داينامو
+        TableName: "OrdersTable",
         Item: newOrder,
       })
     );
@@ -38,18 +34,18 @@ export async function createOrder(req, res) {
     // 2. إرسال إيميل عبر SES بعد نجاح الحفظ
     await sendOrderEmail(newOrder);
 
-    res.status(201).json({ success: true, orderId, message: "Order created successfully!" });
+    return res.status(201).json({ success: true, orderId, message: "Order created successfully!" });
   } catch (error) {
     console.error("Error creating order:", error);
-    res.status(500).json({ error: "Failed to create order" });
+    return res.status(500).json({ error: "Failed to create order" });
   }
 }
 
 async function sendOrderEmail(order) {
   const params = {
-    Source: "ebrahimsayed836@gmail.com", // الإيميل اللي مفعله جوه SES عندك في أستاذة أمازون
+    Source: "ebrahimsayed836@gmail.com",
     Destination: {
-      ToAddresses: [order.customerDetails.email, "ebrahimsayed836@gmail.com"], // إيميل العميل وإيميلك أنت شخصياً للمتابعة
+      ToAddresses: [order.customerDetails.email, "ebrahimsayed836@gmail.com"],
     },
     Message: {
       Subject: {
@@ -82,3 +78,9 @@ async function sendOrderEmail(order) {
     console.error("Failed to send email via SES:", err);
   }
 }
+
+// ربط الـ Route الأساسي (POST /api/orders) بالدالة
+router.post('/', createOrder);
+
+// تصدير الـ Router بالاسم اللي app.js مستنيه
+export { router as ordersRouter };

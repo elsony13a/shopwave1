@@ -36,8 +36,8 @@ jobs:
           aws s3 sync ./frontend/dist s3://ibrahim-cloud-shop-frontend-2026 --delete
 
       - name: Build backend Docker image
-        working-directory: ./frontend
+        working-directory: ./backend
         run: |
           docker build \
-            --build-arg VITE_API_BASE=52.206.0.88 \
-            -t namespace/shopwavetest1:latest .
+            --build-arg VITE_API_BASE=18.207.190.144 \
+            -t namespcae/backend-shopwave .

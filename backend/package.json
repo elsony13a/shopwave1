@@ -1,19 +1,26 @@
 {
   "name": "shopwave-backend",
   "version": "1.0.0",
-  "description": "ShopWave REST API — products, cart management and sample orders (Node.js + Express)",
   "type": "module",
+  "description": "ShopWave REST API — products, cart management and sample orders (Node.js + Express)",
   "main": "src/server.js",
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js"
   },
-  "keywords": ["express", "rest-api", "ecommerce"],
+  "keywords": [
+    "express",
+    "rest-api",
+    "ecommerce"
+  ],
   "license": "MIT",
   "engines": {
     "node": ">=18"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1167.0",
+    "@aws-sdk/client-ses": "^3.1167.0",
+    "@aws-sdk/lib-dynamodb": "^3.1167.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^5.1.0",
